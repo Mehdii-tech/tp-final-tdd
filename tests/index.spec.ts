@@ -63,27 +63,63 @@ describe("Hand Evaluation", () => {
 });
 
 describe("Hand Comparison", () => {
-  it("should compare hands of different ranks correctly", () => {
-    const royalFlush = [
-      { suit: Suit.HEARTS, rank: Rank.ACE },
-      { suit: Suit.HEARTS, rank: Rank.KING },
-      { suit: Suit.HEARTS, rank: Rank.QUEEN },
-      { suit: Suit.HEARTS, rank: Rank.JACK },
-      { suit: Suit.HEARTS, rank: Rank.TEN },
+  it("should compare hands correctly", () => {
+    const hands = [
+      // Royal Flush
+      [
+        { suit: Suit.HEARTS, rank: Rank.ACE },
+        { suit: Suit.HEARTS, rank: Rank.KING },
+        { suit: Suit.HEARTS, rank: Rank.QUEEN },
+        { suit: Suit.HEARTS, rank: Rank.JACK },
+        { suit: Suit.HEARTS, rank: Rank.TEN },
+      ],
+      // Four Aces
+      [
+        { suit: Suit.HEARTS, rank: Rank.ACE },
+        { suit: Suit.DIAMONDS, rank: Rank.ACE },
+        { suit: Suit.CLUBS, rank: Rank.ACE },
+        { suit: Suit.SPADES, rank: Rank.ACE },
+        { suit: Suit.HEARTS, rank: Rank.KING },
+      ],
+      // Full House (Aces over Kings)
+      [
+        { suit: Suit.HEARTS, rank: Rank.ACE },
+        { suit: Suit.DIAMONDS, rank: Rank.ACE },
+        { suit: Suit.CLUBS, rank: Rank.ACE },
+        { suit: Suit.SPADES, rank: Rank.KING },
+        { suit: Suit.HEARTS, rank: Rank.KING },
+      ],
+      // Flush to Ace
+      [
+        { suit: Suit.HEARTS, rank: Rank.ACE },
+        { suit: Suit.HEARTS, rank: Rank.QUEEN },
+        { suit: Suit.HEARTS, rank: Rank.TEN },
+        { suit: Suit.HEARTS, rank: Rank.EIGHT },
+        { suit: Suit.HEARTS, rank: Rank.SIX },
+      ],
+      // Straight to Ace
+      [
+        { suit: Suit.HEARTS, rank: Rank.ACE },
+        { suit: Suit.DIAMONDS, rank: Rank.KING },
+        { suit: Suit.CLUBS, rank: Rank.QUEEN },
+        { suit: Suit.SPADES, rank: Rank.JACK },
+        { suit: Suit.HEARTS, rank: Rank.TEN },
+      ],
     ];
 
-    const fourOfAKind = [
-      { suit: Suit.HEARTS, rank: Rank.ACE },
-      { suit: Suit.DIAMONDS, rank: Rank.ACE },
-      { suit: Suit.CLUBS, rank: Rank.ACE },
-      { suit: Suit.SPADES, rank: Rank.ACE },
-      { suit: Suit.HEARTS, rank: Rank.KING },
-    ];
+    // Vérifie que chaque main bat toutes les mains de rang inférieur
+    for (let i = 0; i < hands.length; i++) {
+      for (let j = i + 1; j < hands.length; j++) {
+        expect(compareHands(hands[i], hands[j])).toBe(1);
+        expect(compareHands(hands[j], hands[i])).toBe(-1);
+      }
+    }
 
-    expect(compareHands(royalFlush, fourOfAKind)).toBe(1);
-    expect(compareHands(fourOfAKind, royalFlush)).toBe(-1);
+    // Vérifie l'égalité
+    for (const hand of hands) {
+      expect(compareHands(hand, [...hand])).toBe(0);
+    }
   });
-
   it("should compare same rank hands correctly", () => {
     // Test pour les carrés
     const higherFourOfAKind = [
