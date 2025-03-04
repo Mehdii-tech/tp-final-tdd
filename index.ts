@@ -110,7 +110,43 @@ export function compareHands(hand1: Hand, hand2: Hand): number {
     return getHandRankValue(rank1) > getHandRankValue(rank2) ? 1 : -1;
   }
 
-  // Pour l'instant, on retourne 0 en cas d'égalité
+  // Si les deux mains sont de même rang, on compare selon les règles spécifiques
+  switch (rank1) {
+    case HandRank.FOUR_OF_A_KIND:
+      return compareFourOfAKind(hand1, hand2);
+    default:
+      return 0;
+  }
+}
+
+function compareFourOfAKind(hand1: Hand, hand2: Hand): number {
+  // Trouver le rang du carré dans chaque main
+  const rankCounts1 = getRankCounts(hand1);
+  const rankCounts2 = getRankCounts(hand2);
+
+  const fourOfAKindRank1 = Array.from(rankCounts1.entries()).find(
+    ([_, count]) => count === 4
+  )?.[0];
+  const fourOfAKindRank2 = Array.from(rankCounts2.entries()).find(
+    ([_, count]) => count === 4
+  )?.[0];
+
+  if (!fourOfAKindRank1 || !fourOfAKindRank2)
+    throw new Error("Invalid four of a kind");
+
+  // Comparer les rangs des carrés
+  if (RANK_VALUES[fourOfAKindRank1] > RANK_VALUES[fourOfAKindRank2]) return 1;
+  if (RANK_VALUES[fourOfAKindRank1] < RANK_VALUES[fourOfAKindRank2]) return -1;
+
+  // Si les carrés sont de même rang, comparer les kickers
+  const kicker1 = hand1.find((card) => card.rank !== fourOfAKindRank1)?.rank;
+  const kicker2 = hand2.find((card) => card.rank !== fourOfAKindRank2)?.rank;
+
+  if (!kicker1 || !kicker2) throw new Error("Invalid kicker");
+
+  if (RANK_VALUES[kicker1] > RANK_VALUES[kicker2]) return 1;
+  if (RANK_VALUES[kicker1] < RANK_VALUES[kicker2]) return -1;
+
   return 0;
 }
 
