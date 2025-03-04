@@ -1,6 +1,35 @@
-import { Hand, HandRank, Rank, RANK_VALUES } from "./types";
+import { Hand, HandRank, Rank, RANK_VALUES, Suit } from "./types";
+
+function validateHand(hand: Hand): void {
+  // Vérifier le nombre de cartes
+  if (!hand || hand.length !== 5) {
+    throw new Error("Une main doit contenir exactement 5 cartes");
+  }
+
+  // Vérifier les rangs et couleurs valides
+  for (const card of hand) {
+    if (!Object.values(Rank).includes(card.rank)) {
+      throw new Error(`Rang invalide: ${card.rank}`);
+    }
+    if (!Object.values(Suit).includes(card.suit)) {
+      throw new Error(`Couleur invalide: ${card.suit}`);
+    }
+  }
+
+  // Vérifier les cartes en double
+  const seen = new Set<string>();
+  for (const card of hand) {
+    const cardKey = `${card.rank}-${card.suit}`;
+    if (seen.has(cardKey)) {
+      throw new Error(`Carte en double: ${card.rank}${card.suit}`);
+    }
+    seen.add(cardKey);
+  }
+}
 
 export function evaluateHand(hand: Hand): HandRank {
+  validateHand(hand);
+
   if (isRoyalFlush(hand)) return HandRank.ROYAL_FLUSH;
   if (isStraightFlush(hand)) return HandRank.STRAIGHT_FLUSH;
   if (isFourOfAKind(hand)) return HandRank.FOUR_OF_A_KIND;
@@ -102,6 +131,9 @@ function isOnePair(hand: Hand): boolean {
 }
 
 export function compareHands(hand1: Hand, hand2: Hand): number {
+  validateHand(hand1);
+  validateHand(hand2);
+
   const rank1 = evaluateHand(hand1);
   const rank2 = evaluateHand(hand2);
 

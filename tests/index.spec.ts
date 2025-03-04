@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Suit, Rank, HandRank, RANK_VALUES } from "../types";
+import { Suit, Rank, HandRank, RANK_VALUES, Hand } from "../types";
 import { evaluateHand, compareHands } from "../index";
 
 describe("Poker Constants", () => {
@@ -160,5 +160,99 @@ describe("Hand Comparison", () => {
     ];
 
     expect(compareHands(fourOfAKind1, fourOfAKind2)).toBe(0);
+  });
+});
+
+describe("Hand Validation", () => {
+  it("should throw error for hand with less than 5 cards", () => {
+    const invalidHand = [
+      { suit: Suit.HEARTS, rank: Rank.ACE },
+      { suit: Suit.DIAMONDS, rank: Rank.KING },
+      { suit: Suit.CLUBS, rank: Rank.QUEEN },
+    ];
+
+    expect(() => evaluateHand(invalidHand as Hand)).toThrow(
+      "Une main doit contenir exactement 5 cartes"
+    );
+  });
+
+  it("should throw error for hand with more than 5 cards", () => {
+    const invalidHand = [
+      { suit: Suit.HEARTS, rank: Rank.ACE },
+      { suit: Suit.DIAMONDS, rank: Rank.KING },
+      { suit: Suit.CLUBS, rank: Rank.QUEEN },
+      { suit: Suit.SPADES, rank: Rank.JACK },
+      { suit: Suit.HEARTS, rank: Rank.TEN },
+      { suit: Suit.DIAMONDS, rank: Rank.NINE },
+    ];
+
+    expect(() => evaluateHand(invalidHand as Hand)).toThrow(
+      "Une main doit contenir exactement 5 cartes"
+    );
+  });
+
+  it("should throw error for invalid rank", () => {
+    const invalidHand = [
+      { suit: Suit.HEARTS, rank: "JOKER" as Rank },
+      { suit: Suit.DIAMONDS, rank: Rank.KING },
+      { suit: Suit.CLUBS, rank: Rank.QUEEN },
+      { suit: Suit.SPADES, rank: Rank.JACK },
+      { suit: Suit.HEARTS, rank: Rank.TEN },
+    ];
+
+    expect(() => evaluateHand(invalidHand as Hand)).toThrow(
+      "Rang invalide: JOKER"
+    );
+  });
+
+  it("should throw error for invalid suit", () => {
+    const invalidHand = [
+      { suit: "STARS" as Suit, rank: Rank.ACE },
+      { suit: Suit.DIAMONDS, rank: Rank.KING },
+      { suit: Suit.CLUBS, rank: Rank.QUEEN },
+      { suit: Suit.SPADES, rank: Rank.JACK },
+      { suit: Suit.HEARTS, rank: Rank.TEN },
+    ];
+
+    expect(() => evaluateHand(invalidHand as Hand)).toThrow(
+      "Couleur invalide: STARS"
+    );
+  });
+
+  it("should throw error for duplicate cards", () => {
+    const invalidHand = [
+      { suit: Suit.HEARTS, rank: Rank.ACE },
+      { suit: Suit.HEARTS, rank: Rank.ACE }, // Duplicate
+      { suit: Suit.CLUBS, rank: Rank.QUEEN },
+      { suit: Suit.SPADES, rank: Rank.JACK },
+      { suit: Suit.HEARTS, rank: Rank.TEN },
+    ];
+
+    expect(() => evaluateHand(invalidHand as Hand)).toThrow(
+      "Carte en double: A♥"
+    );
+  });
+
+  it("should throw error when comparing invalid hands", () => {
+    const validHand = [
+      { suit: Suit.HEARTS, rank: Rank.ACE },
+      { suit: Suit.DIAMONDS, rank: Rank.KING },
+      { suit: Suit.CLUBS, rank: Rank.QUEEN },
+      { suit: Suit.SPADES, rank: Rank.JACK },
+      { suit: Suit.HEARTS, rank: Rank.TEN },
+    ];
+
+    const invalidHand = [
+      { suit: Suit.HEARTS, rank: Rank.ACE },
+      { suit: Suit.DIAMONDS, rank: Rank.KING },
+      { suit: Suit.CLUBS, rank: Rank.QUEEN },
+    ];
+
+    expect(() => compareHands(validHand as Hand, invalidHand as Hand)).toThrow(
+      "Une main doit contenir exactement 5 cartes"
+    );
+    expect(() => compareHands(invalidHand as Hand, validHand as Hand)).toThrow(
+      "Une main doit contenir exactement 5 cartes"
+    );
   });
 });
