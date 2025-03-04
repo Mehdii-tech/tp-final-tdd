@@ -1,11 +1,24 @@
-import { Hand, HandRank, Rank } from "./types";
+import { Hand, HandRank, Rank, RANK_VALUES } from "./types";
 
 export function evaluateHand(hand: Hand): HandRank {
   if (isRoyalFlush(hand)) return HandRank.ROYAL_FLUSH;
+  if (isStraightFlush(hand)) return HandRank.STRAIGHT_FLUSH;
   if (isFourOfAKind(hand)) return HandRank.FOUR_OF_A_KIND;
   if (isFullHouse(hand)) return HandRank.FULL_HOUSE;
+  if (isFlush(hand)) return HandRank.FLUSH;
+  if (isStraight(hand)) return HandRank.STRAIGHT;
+  if (isThreeOfAKind(hand)) return HandRank.THREE_OF_A_KIND;
+  if (isTwoPair(hand)) return HandRank.TWO_PAIR;
+  if (isOnePair(hand)) return HandRank.ONE_PAIR;
+  return HandRank.HIGH_CARD;
+}
 
-  return HandRank.HIGH_CARD; // Temporaire, à compléter
+function getRankCounts(hand: Hand): Map<Rank, number> {
+  const rankCounts = new Map<Rank, number>();
+  for (const card of hand) {
+    rankCounts.set(card.rank, (rankCounts.get(card.rank) || 0) + 1);
+  }
+  return rankCounts;
 }
 
 function isRoyalFlush(hand: Hand): boolean {
@@ -26,25 +39,69 @@ function isRoyalFlush(hand: Hand): boolean {
   );
 }
 
+function isStraightFlush(hand: Hand): boolean {
+  return isFlush(hand) && isStraight(hand);
+}
+
 function isFourOfAKind(hand: Hand): boolean {
-  const rankCounts = new Map<Rank, number>();
-
-  for (const card of hand) {
-    rankCounts.set(card.rank, (rankCounts.get(card.rank) || 0) + 1);
-  }
-
+  const rankCounts = getRankCounts(hand);
   return Array.from(rankCounts.values()).includes(4);
 }
 
 function isFullHouse(hand: Hand): boolean {
-  const rankCounts = new Map<Rank, number>();
-
-  for (const card of hand) {
-    rankCounts.set(card.rank, (rankCounts.get(card.rank) || 0) + 1);
-  }
-
+  const rankCounts = getRankCounts(hand);
   const counts = Array.from(rankCounts.values());
   return counts.includes(3) && counts.includes(2);
+}
+
+function isFlush(hand: Hand): boolean {
+  return hand.every((card) => card.suit === hand[0].suit);
+}
+
+function isStraight(hand: Hand): boolean {
+  const sortedValues = hand
+    .map((card) => RANK_VALUES[card.rank])
+    .sort((a, b) => a - b);
+
+  // Vérifier la suite normale
+  if (isConsecutive(sortedValues)) return true;
+
+  // Vérifier la suite As-5 (As peut être utilisé comme 1)
+  if (sortedValues[4] === RANK_VALUES[Rank.ACE]) {
+    const lowAceStraight = [
+      RANK_VALUES[Rank.TWO],
+      RANK_VALUES[Rank.THREE],
+      RANK_VALUES[Rank.FOUR],
+      RANK_VALUES[Rank.FIVE],
+      1, // As comme 1
+    ];
+    return isConsecutive(lowAceStraight);
+  }
+
+  return false;
+}
+
+function isConsecutive(values: number[]): boolean {
+  for (let i = 1; i < values.length; i++) {
+    if (values[i] !== values[i - 1] + 1) return false;
+  }
+  return true;
+}
+
+function isThreeOfAKind(hand: Hand): boolean {
+  const rankCounts = getRankCounts(hand);
+  return Array.from(rankCounts.values()).includes(3);
+}
+
+function isTwoPair(hand: Hand): boolean {
+  const rankCounts = getRankCounts(hand);
+  const pairs = Array.from(rankCounts.values()).filter((count) => count === 2);
+  return pairs.length === 2;
+}
+
+function isOnePair(hand: Hand): boolean {
+  const rankCounts = getRankCounts(hand);
+  return Array.from(rankCounts.values()).includes(2);
 }
 
 export * from "./types";
