@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { Suit, Rank, HandRank, RANK_VALUES } from "../types";
-import { evaluateHand } from "../index";
+import { evaluateHand, compareHands } from "../index";
 
 describe("Poker Constants", () => {
   it("should have correct suit symbols", () => {
@@ -196,5 +196,48 @@ describe("Hand Evaluation", () => {
       ];
       expect(evaluateHand(highCard)).toBe(HandRank.HIGH_CARD);
     });
+  });
+});
+
+describe("Hand Comparison", () => {
+  it("should correctly compare hands of different ranks", () => {
+    const royalFlush = [
+      { suit: Suit.HEARTS, rank: Rank.ACE },
+      { suit: Suit.HEARTS, rank: Rank.KING },
+      { suit: Suit.HEARTS, rank: Rank.QUEEN },
+      { suit: Suit.HEARTS, rank: Rank.JACK },
+      { suit: Suit.HEARTS, rank: Rank.TEN },
+    ];
+
+    const fourOfAKind = [
+      { suit: Suit.HEARTS, rank: Rank.ACE },
+      { suit: Suit.DIAMONDS, rank: Rank.ACE },
+      { suit: Suit.CLUBS, rank: Rank.ACE },
+      { suit: Suit.SPADES, rank: Rank.ACE },
+      { suit: Suit.HEARTS, rank: Rank.KING },
+    ];
+
+    expect(compareHands(royalFlush, fourOfAKind)).toBe(1);
+    expect(compareHands(fourOfAKind, royalFlush)).toBe(-1);
+  });
+
+  it("should handle equal ranks as a tie", () => {
+    const royalFlush1 = [
+      { suit: Suit.HEARTS, rank: Rank.ACE },
+      { suit: Suit.HEARTS, rank: Rank.KING },
+      { suit: Suit.HEARTS, rank: Rank.QUEEN },
+      { suit: Suit.HEARTS, rank: Rank.JACK },
+      { suit: Suit.HEARTS, rank: Rank.TEN },
+    ];
+
+    const royalFlush2 = [
+      { suit: Suit.SPADES, rank: Rank.ACE },
+      { suit: Suit.SPADES, rank: Rank.KING },
+      { suit: Suit.SPADES, rank: Rank.QUEEN },
+      { suit: Suit.SPADES, rank: Rank.JACK },
+      { suit: Suit.SPADES, rank: Rank.TEN },
+    ];
+
+    expect(compareHands(royalFlush1, royalFlush2)).toBe(0);
   });
 });

@@ -59,23 +59,20 @@ function isFlush(hand: Hand): boolean {
 }
 
 function isStraight(hand: Hand): boolean {
-  const sortedValues = hand
+  const values = hand
     .map((card) => RANK_VALUES[card.rank])
     .sort((a, b) => a - b);
 
   // Vérifier la suite normale
-  if (isConsecutive(sortedValues)) return true;
+  if (isConsecutive(values)) return true;
 
   // Vérifier la suite As-5 (As peut être utilisé comme 1)
-  if (sortedValues[4] === RANK_VALUES[Rank.ACE]) {
-    const lowAceStraight = [
-      RANK_VALUES[Rank.TWO],
-      RANK_VALUES[Rank.THREE],
-      RANK_VALUES[Rank.FOUR],
-      RANK_VALUES[Rank.FIVE],
+  if (values[4] === RANK_VALUES[Rank.ACE]) {
+    const valuesWithAceAsOne = [
       1, // As comme 1
-    ];
-    return isConsecutive(lowAceStraight);
+      ...values.slice(0, 4), // Les 4 autres cartes
+    ].sort((a, b) => a - b);
+    return isConsecutive(valuesWithAceAsOne);
   }
 
   return false;
@@ -102,6 +99,35 @@ function isTwoPair(hand: Hand): boolean {
 function isOnePair(hand: Hand): boolean {
   const rankCounts = getRankCounts(hand);
   return Array.from(rankCounts.values()).includes(2);
+}
+
+export function compareHands(hand1: Hand, hand2: Hand): number {
+  const rank1 = evaluateHand(hand1);
+  const rank2 = evaluateHand(hand2);
+
+  // Si les rangs sont différents, la main avec le rang le plus élevé gagne
+  if (rank1 !== rank2) {
+    return getHandRankValue(rank1) > getHandRankValue(rank2) ? 1 : -1;
+  }
+
+  // Pour l'instant, on retourne 0 en cas d'égalité
+  return 0;
+}
+
+function getHandRankValue(rank: HandRank): number {
+  const rankValues = {
+    [HandRank.HIGH_CARD]: 0,
+    [HandRank.ONE_PAIR]: 1,
+    [HandRank.TWO_PAIR]: 2,
+    [HandRank.THREE_OF_A_KIND]: 3,
+    [HandRank.STRAIGHT]: 4,
+    [HandRank.FLUSH]: 5,
+    [HandRank.FULL_HOUSE]: 6,
+    [HandRank.FOUR_OF_A_KIND]: 7,
+    [HandRank.STRAIGHT_FLUSH]: 8,
+    [HandRank.ROYAL_FLUSH]: 9,
+  };
+  return rankValues[rank];
 }
 
 export * from "./types";
