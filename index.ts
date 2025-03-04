@@ -1,62 +1,50 @@
-const main = () => {
-  console.log("Hello, World!");
-};
+import { Hand, HandRank, Rank } from "./types";
 
-main();
+export function evaluateHand(hand: Hand): HandRank {
+  if (isRoyalFlush(hand)) return HandRank.ROYAL_FLUSH;
+  if (isFourOfAKind(hand)) return HandRank.FOUR_OF_A_KIND;
+  if (isFullHouse(hand)) return HandRank.FULL_HOUSE;
 
-export enum Suit {
-  HEARTS = "♥",
-  DIAMONDS = "♦",
-  CLUBS = "♣",
-  SPADES = "♠",
+  return HandRank.HIGH_CARD; // Temporaire, à compléter
 }
 
-export enum Rank {
-  TWO = "2",
-  THREE = "3",
-  FOUR = "4",
-  FIVE = "5",
-  SIX = "6",
-  SEVEN = "7",
-  EIGHT = "8",
-  NINE = "9",
-  TEN = "10",
-  JACK = "J",
-  QUEEN = "Q",
-  KING = "K",
-  ACE = "A",
+function isRoyalFlush(hand: Hand): boolean {
+  const isFlush = hand.every((card) => card.suit === hand[0].suit);
+  const ranks = new Set(hand.map((card) => card.rank));
+  const royalCards = new Set([
+    Rank.TEN,
+    Rank.JACK,
+    Rank.QUEEN,
+    Rank.KING,
+    Rank.ACE,
+  ]);
+
+  return (
+    isFlush &&
+    ranks.size === 5 &&
+    [...ranks].every((rank) => royalCards.has(rank))
+  );
 }
 
-export const RANK_VALUES: { [key in Rank]: number } = {
-  [Rank.TWO]: 2,
-  [Rank.THREE]: 3,
-  [Rank.FOUR]: 4,
-  [Rank.FIVE]: 5,
-  [Rank.SIX]: 6,
-  [Rank.SEVEN]: 7,
-  [Rank.EIGHT]: 8,
-  [Rank.NINE]: 9,
-  [Rank.TEN]: 10,
-  [Rank.JACK]: 11,
-  [Rank.QUEEN]: 12,
-  [Rank.KING]: 13,
-  [Rank.ACE]: 14,
-};
+function isFourOfAKind(hand: Hand): boolean {
+  const rankCounts = new Map<Rank, number>();
 
-export interface Card {
-  suit: Suit;
-  rank: Rank;
+  for (const card of hand) {
+    rankCounts.set(card.rank, (rankCounts.get(card.rank) || 0) + 1);
+  }
+
+  return Array.from(rankCounts.values()).includes(4);
 }
 
-export enum HandRank {
-  HIGH_CARD = "HIGH_CARD",
-  ONE_PAIR = "ONE_PAIR",
-  TWO_PAIR = "TWO_PAIR",
-  THREE_OF_A_KIND = "THREE_OF_A_KIND",
-  STRAIGHT = "STRAIGHT",
-  FLUSH = "FLUSH",
-  FULL_HOUSE = "FULL_HOUSE",
-  FOUR_OF_A_KIND = "FOUR_OF_A_KIND",
-  STRAIGHT_FLUSH = "STRAIGHT_FLUSH",
-  ROYAL_FLUSH = "ROYAL_FLUSH",
+function isFullHouse(hand: Hand): boolean {
+  const rankCounts = new Map<Rank, number>();
+
+  for (const card of hand) {
+    rankCounts.set(card.rank, (rankCounts.get(card.rank) || 0) + 1);
+  }
+
+  const counts = Array.from(rankCounts.values());
+  return counts.includes(3) && counts.includes(2);
 }
+
+export * from "./types";
